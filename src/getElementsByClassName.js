@@ -9,22 +9,12 @@ var getElementsByClassName = function(className){
   var result = [];
   var checkElement = function(element) {
 
-    // function to recursively check children
-    var checkChild = function (i){
-      // start with the element, then recurses for each of its children,
-      // then if it has a sibling after it, we do the same thing for that element
-      // then we return.
-      return checkElement(element.childNodes[i]),
-        (i < element.childNodes.length - 1) && checkChild(i+1);
-    };
-
-    // if the element has the class we are checking for
     if (element.classList && [].slice.apply(element.classList).includes(className)) {
       // add it to our result set
       result.push(element);
     }
-    // if there are children, check them as well
-    return element.childNodes && element.childNodes.length && checkChild(0);
+    return element.childNodes && element.childNodes.length && checkElement(element.childNodes[0]),
+      element.nextElementSibling && checkElement(element.nextElementSibling);
   };
   checkElement(document.body);
   return result;
