@@ -4,7 +4,10 @@
 // but you don't so you're going to write it from scratch:
 
 var stringifyJSON = function(obj) {
-  var toJSON = function(item) {
+  // function to stringify individual items
+  // created the scope to handle edge cases for undefined items in arrays,
+  // but it can be used to handle edge cases for any type
+  var toJSON = function(item, scope) {
     if (item === null) {
       // string version of null
       return 'null';
@@ -15,7 +18,8 @@ var stringifyJSON = function(obj) {
 
     // skip functions and undefined values by returning an empty string
     if (item === undefined || type === 'function') {
-      return '';
+      // if we're in an array, return 'null', otherwise empty string
+      return scope === 'array' ? 'null' : '';
     }
 
     // return string value of numbers and booleans for concatenation without coercion
@@ -36,7 +40,8 @@ var stringifyJSON = function(obj) {
       if (Array.isArray(item)){
         return (
           _.reduce(item, function(str, item, key){
-            return str + (key ? ',' : '') + toJSON(item);
+            // stringify each value with the "scope" of "array"
+            return str + (key ? ',' : '') + toJSON(item, 'array');
           }, '[') + ']'
         );
       }
@@ -45,9 +50,12 @@ var stringifyJSON = function(obj) {
       // and of course stringify the keys and values
       var keyvals = [];
       _.each(item, function(value, key) {
-        var jsonVal = toJSON(value);
-        if (jsonVal !== ''){
-          keyvals.push(toJSON(key) + ':' + jsonVal);
+        // stringify each key/value with the "scope" of "object"
+        // if jsonVal of item is
+        var jsonVal = toJSON(value, type);
+        var jsonKey = toJSON(key, type);
+        if (jsonVal && jsonKey){
+          keyvals.push(jsonKey + ':' + jsonVal);
         }
       });
 
@@ -55,8 +63,8 @@ var stringifyJSON = function(obj) {
       return '{' + keyvals.join(',') + '}';
     }
     // if it hasn't been handled, just try the toString value of the object (Dates?)
-    return '"' + item.toString() + '"';
+    return item.toString();
   }
   // start with our main object
-  return toJSON(obj);
+  return toJSON(obj, typeof obj);
 };
